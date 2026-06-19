@@ -169,12 +169,14 @@ function handleSwipe() {
     }
 }
 
-// Eventos pasivos para no bloquear el scroll nativo si lo hubiera
+// Lógica de Swipe con protección contra Zoom (Pellizco)
 lightbox.addEventListener('touchstart', e => {
+    if (e.touches.length > 1) return; // Si hay más de 1 dedo, ignora (es zoom)
     touchstartX = e.changedTouches[0].screenX;
 }, { passive: true });
 
 lightbox.addEventListener('touchend', e => {
+    if (e.changedTouches.length > 1 || e.touches.length > 0) return; // Protege la salida del zoom
     touchendX = e.changedTouches[0].screenX;
     handleSwipe();
 });
@@ -203,14 +205,18 @@ const shortsObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
         if (entry.isIntersecting && !hasBounced) {
             hasBounced = true; 
-            setTimeout(() => {
-                if(shortsSlider) {
-                    shortsSlider.scrollBy({ left: 80, behavior: 'smooth' });
-                    setTimeout(() => {
-                        shortsSlider.scrollBy({ left: -80, behavior: 'smooth' });
-                    }, 400);
-                }
-            }, 800);
+            
+            // CONDICIÓN MÁGICA: Solo hace la animación si la pantalla es más ancha que 900px (Desktop/Tablet)
+            if (window.innerWidth > 900) {
+                setTimeout(() => {
+                    if(shortsSlider) {
+                        shortsSlider.scrollBy({ left: 80, behavior: 'smooth' });
+                        setTimeout(() => {
+                            shortsSlider.scrollBy({ left: -80, behavior: 'smooth' });
+                        }, 400);
+                    }
+                }, 800);
+            }
         }
     });
 }, { threshold: 0.6 }); 

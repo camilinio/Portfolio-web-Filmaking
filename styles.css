@@ -301,6 +301,9 @@ a { text-decoration: none; color: inherit; transition: 0.3s; }
         aspect-ratio: 9/16; 
         flex: none; 
     }
+    .short-text-container {
+        padding: 10px 20px !important;
+    }
     
     /* RESTAURAMOS BOTONES DEL SLIDER EN MÓVIL: Centrados sobre el video e intuitivos */
     .slider-btn { 
