@@ -70,7 +70,7 @@ galleryImages.forEach(img => {
     }
 });
 
-// --- 5. LIGHTBOX AVANZADO (CON ZOOM Y LIMPIEZA DE ESTADOS) ---
+// --- 5. LIGHTBOX AVANZADO (CON ZOOM, LIMPIEZA DE ESTADOS Y SWIPE MÓVIL) ---
 const lightbox = document.getElementById('lightbox');
 const lightboxImg = document.getElementById('lightbox-img');
 const closeBtn = document.querySelector('.close-lightbox');
@@ -151,6 +151,32 @@ document.addEventListener('keydown', (e) => {
     if(e.key === "ArrowRight") navigate(1);
     if(e.key === "ArrowLeft") navigate(-1);
     if(e.key.toLowerCase() === "z") { e.preventDefault(); toggleZoom(); }
+});
+
+// Novedad: Lógica de Swipe (deslizar) para celulares en el Lightbox
+let touchstartX = 0;
+let touchendX = 0;
+
+function handleSwipe() {
+    if (!isGalleryMode) return; // Solo aplicar swipe a las fotos, no al certificado
+    const swipeThreshold = 50; // Tolerancia en píxeles para evitar swipes accidentales
+
+    if (touchendX < touchstartX - swipeThreshold) {
+        navigate(1); // Deslizó a la izquierda -> siguiente foto
+    }
+    if (touchendX > touchstartX + swipeThreshold) {
+        navigate(-1); // Deslizó a la derecha -> foto anterior
+    }
+}
+
+// Eventos pasivos para no bloquear el scroll nativo si lo hubiera
+lightbox.addEventListener('touchstart', e => {
+    touchstartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+lightbox.addEventListener('touchend', e => {
+    touchendX = e.changedTouches[0].screenX;
+    handleSwipe();
 });
 
 // --- 6. DINÁMICA DE REVEAL DEL FOOTER & MEDIDAS EN TIEMPO REAL ---
@@ -315,7 +341,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const updateButtons = () => {
-            // Tolerancia de 15px por si la resolución genera decimales molestos
             if (slider.scrollLeft <= 15) {
                 prevBtn.classList.add('hidden');
             } else {
@@ -333,4 +358,33 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('resize', updateButtons);
         updateButtons();
     }
+
+// --- 11. OCULTAR WHATSAPP FLOTANTE AL FINAL (VERSIÓN CORREGIDA POR SCROLL) ---
+const floatingWa = document.querySelector('.floating-wa');
+
+if (floatingWa) {
+    // Transición suave
+    floatingWa.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+
+    window.addEventListener('scroll', () => {
+        // Calculamos la posición actual del scroll sumando el alto de la pantalla
+        const scrollPosition = window.scrollY + window.innerHeight;
+        // Obtenemos la altura total de todo el documento
+        const documentHeight = document.documentElement.scrollHeight;
+        
+        // Si estamos a menos de 150 píxeles de tocar el final de la página
+        if (documentHeight - scrollPosition < 150) {
+            // Ocultamos el botón
+            floatingWa.style.opacity = '0';
+            floatingWa.style.pointerEvents = 'none';
+            floatingWa.style.transform = 'translateY(20px) scale(0.9)';
+        } else {
+            // Lo volvemos a mostrar si subimos
+            floatingWa.style.opacity = '1';
+            floatingWa.style.pointerEvents = 'auto';
+            floatingWa.style.transform = 'translateY(0) scale(1)';
+        }
+    });
+}
+
 });
